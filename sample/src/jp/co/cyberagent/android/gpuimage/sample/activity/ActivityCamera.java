@@ -128,15 +128,25 @@ public class ActivityCamera extends Activity implements OnSeekBarChangeListener,
         // TODO get a size that is about the size of the screen
         Camera.Parameters params = mCamera.mCameraInstance.getParameters();
         params.setRotation(90);
+
+        // Highest possible picture size and quality
+        params.setPictureSize(3264, 2448);
+        params.setJpegQuality(100);
+
         mCamera.mCameraInstance.setParameters(params);
         for (Camera.Size size : params.getSupportedPictureSizes()) {
             Log.i("ASDF", "Supported: " + size.width + "x" + size.height);
         }
+
+        final long start = System.currentTimeMillis();
+
         mCamera.mCameraInstance.takePicture(null, null,
                 new Camera.PictureCallback() {
 
                     @Override
                     public void onPictureTaken(byte[] data, final Camera camera) {
+
+                        Log.i("ASDF", "Capture time: " + (System.currentTimeMillis() - start) + " millis");
 
                         final File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
                         if (pictureFile == null) {
@@ -167,9 +177,14 @@ public class ActivityCamera extends Activity implements OnSeekBarChangeListener,
                                     @Override
                                     public void onPictureSaved(final Uri
                                             uri) {
+
+                                        Log.i("ASDF", "Save time: " + (System.currentTimeMillis() - start) + " millis");
+
                                         pictureFile.delete();
                                         camera.startPreview();
                                         view.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+
+                                        Log.i("ASDF", "All done time: " + (System.currentTimeMillis() - start) + " millis");
                                     }
                                 });
                     }
