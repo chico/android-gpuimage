@@ -506,7 +506,7 @@ public class GPUImage {
             try {
                 file.getParentFile()
                     .mkdirs();
-                image.compress(CompressFormat.JPEG, 80, new FileOutputStream(file));
+                image.compress(CompressFormat.JPEG, 100, new FileOutputStream(file));
                 MediaScannerConnection.scanFile(mContext, new String[]{file.toString()}, null,
                                                 new MediaScannerConnection.OnScanCompletedListener() {
 
