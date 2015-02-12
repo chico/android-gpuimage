@@ -39,27 +39,31 @@ import android.provider.MediaStore;
 import android.view.Display;
 import android.view.WindowManager;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
-import java.util.concurrent.Semaphore;
 
 /**
- * The main accessor for GPUImage functionality. This class helps to do common
- * tasks through a simple interface.
+ The main accessor for GPUImage functionality. This class helps to do common tasks through a simple interface.
  */
 public class GPUImage {
-    private final Context mContext;
+
+    private final Context          mContext;
     private final GPUImageRenderer mRenderer;
-    private GLSurfaceView mGlSurfaceView;
-    private GPUImageFilter mFilter;
-    private Bitmap mCurrentBitmap;
+    private       GLSurfaceView    mGlSurfaceView;
+    private       GPUImageFilter   mFilter;
+    private       Bitmap           mCurrentBitmap;
     private ScaleType mScaleType = ScaleType.CENTER_CROP;
 
     /**
-     * Instantiates a new GPUImage object.
-     *
-     * @param context the context
+     Instantiates a new GPUImage object.
+
+     @param context
+     the context
      */
     public GPUImage(final Context context) {
         if (!supportsOpenGLES2(context)) {
@@ -72,36 +76,38 @@ public class GPUImage {
     }
 
     /**
-     * Checks if OpenGL ES 2.0 is supported on the current device.
-     *
-     * @param context the context
-     * @return true, if successful
+     Checks if OpenGL ES 2.0 is supported on the current device.
+
+     @param context
+     the context
+
+     @return true, if successful
      */
     private boolean supportsOpenGLES2(final Context context) {
-        final ActivityManager activityManager = (ActivityManager)
-                context.getSystemService(Context.ACTIVITY_SERVICE);
-        final ConfigurationInfo configurationInfo =
-                activityManager.getDeviceConfigurationInfo();
+        final ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        final ConfigurationInfo configurationInfo = activityManager.getDeviceConfigurationInfo();
         return configurationInfo.reqGlEsVersion >= 0x20000;
     }
 
     /**
-     * Sets the GLSurfaceView which will display the preview.
-     *
-     * @param view the GLSurfaceView
+     Sets the GLSurfaceView which will display the preview.
+
+     @param view
+     the GLSurfaceView
      */
     public void setGLSurfaceView(final GLSurfaceView view) {
         mGlSurfaceView = view;
         mGlSurfaceView.setEGLContextClientVersion(2);
         mGlSurfaceView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
-        mGlSurfaceView.getHolder().setFormat(PixelFormat.RGBA_8888);
+        mGlSurfaceView.getHolder()
+                      .setFormat(PixelFormat.RGBA_8888);
         mGlSurfaceView.setRenderer(mRenderer);
         mGlSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
         mGlSurfaceView.requestRender();
     }
 
     /**
-     * Request the preview to be rendered again.
+     Request the preview to be rendered again.
      */
     public void requestRender() {
         if (mGlSurfaceView != null) {
@@ -110,24 +116,29 @@ public class GPUImage {
     }
 
     /**
-     * Sets the up camera to be connected to GPUImage to get a filtered preview.
-     *
-     * @param camera the camera
+     Sets the up camera to be connected to GPUImage to get a filtered preview.
+
+     @param camera
+     the camera
      */
     public void setUpCamera(final Camera camera) {
         setUpCamera(camera, 0, false, false);
     }
 
     /**
-     * Sets the up camera to be connected to GPUImage to get a filtered preview.
-     *
-     * @param camera the camera
-     * @param degrees by how many degrees the image should be rotated
-     * @param flipHorizontal if the image should be flipped horizontally
-     * @param flipVertical if the image should be flipped vertically
+     Sets the up camera to be connected to GPUImage to get a filtered preview.
+
+     @param camera
+     the camera
+     @param degrees
+     by how many degrees the image should be rotated
+     @param flipHorizontal
+     if the image should be flipped horizontally
+     @param flipVertical
+     if the image should be flipped vertically
      */
     public void setUpCamera(final Camera camera, final int degrees, final boolean flipHorizontal,
-            final boolean flipVertical) {
+                            final boolean flipVertical) {
         mGlSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.GINGERBREAD_MR1) {
             setUpCameraGingerbread(camera);
@@ -156,10 +167,10 @@ public class GPUImage {
     }
 
     /**
-     * Sets the filter which should be applied to the image which was (or will
-     * be) set by setImage(...).
-     *
-     * @param filter the new filter
+     Sets the filter which should be applied to the image which was (or will be) set by setImage(...).
+
+     @param filter
+     the new filter
      */
     public void setFilter(final GPUImageFilter filter) {
         mFilter = filter;
@@ -168,9 +179,10 @@ public class GPUImage {
     }
 
     /**
-     * Sets the image on which the filter should be applied.
-     *
-     * @param bitmap the new image
+     Sets the image on which the filter should be applied.
+
+     @param bitmap
+     the new image
      */
     public void setImage(final Bitmap bitmap) {
         mCurrentBitmap = bitmap;
@@ -179,10 +191,11 @@ public class GPUImage {
     }
 
     /**
-     * This sets the scale type of GPUImage. This has to be run before setting the image.
-     * If image is set and scale type changed, image needs to be reset.
-     *
-     * @param scaleType The new ScaleType
+     This sets the scale type of GPUImage. This has to be run before setting the image. If image is set and scale type
+     changed, image needs to be reset.
+
+     @param scaleType
+     The new ScaleType
      */
     public void setScaleType(ScaleType scaleType) {
         mScaleType = scaleType;
@@ -193,16 +206,17 @@ public class GPUImage {
     }
 
     /**
-     * Sets the rotation of the displayed image.
-     *
-     * @param rotation new rotation
+     Sets the rotation of the displayed image.
+
+     @param rotation
+     new rotation
      */
     public void setRotation(Rotation rotation) {
         mRenderer.setRotation(rotation);
     }
 
     /**
-     * Deletes the current image.
+     Deletes the current image.
      */
     public void deleteImage() {
         mRenderer.deleteImage();
@@ -211,29 +225,29 @@ public class GPUImage {
     }
 
     /**
-     * Sets the image on which the filter should be applied from a Uri.
-     *
-     * @param uri the uri of the new image
+     Sets the image on which the filter should be applied from a Uri.
+
+     @param uri
+     the uri of the new image
      */
     public void setImage(final Uri uri) {
         new LoadImageUriTask(this, uri).execute();
     }
 
     /**
-     * Sets the image on which the filter should be applied from a File.
-     *
-     * @param file the file of the new image
+     Sets the image on which the filter should be applied from a File.
+
+     @param file
+     the file of the new image
      */
     public void setImage(final File file) {
         new LoadImageFileTask(this, file).execute();
     }
 
     private String getPath(final Uri uri) {
-        String[] projection = {
-                MediaStore.Images.Media.DATA,
-        };
+        String[] projection = {MediaStore.Images.Media.DATA,};
         Cursor cursor = mContext.getContentResolver()
-                .query(uri, projection, null, null, null);
+                                .query(uri, projection, null, null, null);
         int pathIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
         String path = null;
         if (cursor.moveToFirst()) {
@@ -244,19 +258,21 @@ public class GPUImage {
     }
 
     /**
-     * Gets the current displayed image with applied filter as a Bitmap.
-     *
-     * @return the current image with filter applied
+     Gets the current displayed image with applied filter as a Bitmap.
+
+     @return the current image with filter applied
      */
     public Bitmap getBitmapWithFilterApplied() {
         return getBitmapWithFilterApplied(mCurrentBitmap);
     }
 
     /**
-     * Gets the given bitmap with current filter applied as a Bitmap.
-     *
-     * @param bitmap the bitmap on which the current filter should be applied
-     * @return the bitmap with filter applied
+     Gets the given bitmap with current filter applied as a Bitmap.
+
+     @param bitmap
+     the bitmap on which the current filter should be applied
+
+     @return the bitmap with filter applied
      */
     public Bitmap getBitmapWithFilterApplied(final Bitmap bitmap) {
         if (mGlSurfaceView != null) {
@@ -265,13 +281,13 @@ public class GPUImage {
 
                 @Override
                 public void run() {
-                    synchronized(mFilter) {
+                    synchronized (mFilter) {
                         mFilter.destroy();
                         mFilter.notify();
                     }
                 }
             });
-            synchronized(mFilter) {
+            synchronized (mFilter) {
                 requestRender();
                 try {
                     mFilter.wait();
@@ -282,8 +298,7 @@ public class GPUImage {
         }
 
         GPUImageRenderer renderer = new GPUImageRenderer(mFilter);
-        renderer.setRotation(Rotation.NORMAL,
-                mRenderer.isFlippedHorizontally(), mRenderer.isFlippedVertically());
+        renderer.setRotation(Rotation.NORMAL, mRenderer.isFlippedHorizontally(), mRenderer.isFlippedVertically());
         renderer.setScaleType(mScaleType);
         PixelBuffer buffer = new PixelBuffer(bitmap.getWidth(), bitmap.getHeight());
         buffer.setRenderer(renderer);
@@ -303,18 +318,19 @@ public class GPUImage {
     }
 
     /**
-     * Gets the images for multiple filters on a image. This can be used to
-     * quickly get thumbnail images for filters. <br>
-     * Whenever a new Bitmap is ready, the listener will be called with the
-     * bitmap. The order of the calls to the listener will be the same as the
-     * filter order.
-     *
-     * @param bitmap the bitmap on which the filters will be applied
-     * @param filters the filters which will be applied on the bitmap
-     * @param listener the listener on which the results will be notified
+     Gets the images for multiple filters on a image. This can be used to quickly get thumbnail images for filters. <br>
+     Whenever a new Bitmap is ready, the listener will be called with the bitmap. The order of the calls to the listener
+     will be the same as the filter order.
+
+     @param bitmap
+     the bitmap on which the filters will be applied
+     @param filters
+     the filters which will be applied on the bitmap
+     @param listener
+     the listener on which the results will be notified
      */
-    public static void getBitmapForMultipleFilters(final Bitmap bitmap,
-            final List<GPUImageFilter> filters, final ResponseListener<Bitmap> listener) {
+    public static void getBitmapForMultipleFilters(final Bitmap bitmap, final List<GPUImageFilter> filters,
+                                                   final ResponseListener<Bitmap> listener) {
         if (filters.isEmpty()) {
             return;
         }
@@ -333,50 +349,58 @@ public class GPUImage {
     }
 
     /**
-     * Deprecated: Please use
-     * {@link GPUImageView#saveToPictures(String, String, jp.co.cyberagent.android.gpuimage.GPUImageView.OnPictureSavedListener)}
-     *
-     * Save current image with applied filter to Pictures. It will be stored on
-     * the default Picture folder on the phone below the given folderName and
-     * fileName. <br>
-     * This method is async and will notify when the image was saved through the
-     * listener.
-     *
-     * @param folderName the folder name
-     * @param fileName the file name
-     * @param listener the listener
+     Deprecated: Please use {@link GPUImageView#saveToPictures(String, String, jp.co.cyberagent.android.gpuimage.GPUImageView.OnPictureSavedListener)}
+     <p/>
+     Save current image with applied filter to Pictures. It will be stored on the default Picture folder on the phone
+     below the given folderName and fileName. <br> This method is async and will notify when the image was saved through
+     the listener.
+
+     @param folderName
+     the folder name
+     @param fileName
+     the file name
+     @param listener
+     the listener
      */
     @Deprecated
-    public void saveToPictures(final String folderName, final String fileName,
-            final OnPictureSavedListener listener) {
+    public void saveToPictures(final String folderName, final String fileName, final OnPictureSavedListener listener) {
         saveToPictures(mCurrentBitmap, folderName, fileName, listener);
     }
 
     /**
-     * Deprecated: Please use
-     * {@link GPUImageView#saveToPictures(String, String, jp.co.cyberagent.android.gpuimage.GPUImageView.OnPictureSavedListener)}
-     *
-     * Apply and save the given bitmap with applied filter to Pictures. It will
-     * be stored on the default Picture folder on the phone below the given
-     * folerName and fileName. <br>
-     * This method is async and will notify when the image was saved through the
-     * listener.
-     *
-     * @param bitmap the bitmap
-     * @param folderName the folder name
-     * @param fileName the file name
-     * @param listener the listener
+     Deprecated: Please use {@link GPUImageView#saveToPictures(String, String, jp.co.cyberagent.android.gpuimage.GPUImageView.OnPictureSavedListener)}
+     <p/>
+     Apply and save the given bitmap with applied filter to Pictures. It will be stored on the default Picture folder on
+     the phone below the given folerName and fileName. <br> This method is async and will notify when the image was saved
+     through the listener.
+
+     @param bitmap
+     the bitmap
+     @param folderName
+     the folder name
+     @param fileName
+     the file name
+     @param listener
+     the listener
      */
     @Deprecated
     public void saveToPictures(final Bitmap bitmap, final String folderName, final String fileName,
-            final OnPictureSavedListener listener) {
+                               final OnPictureSavedListener listener) {
         new SaveTask(bitmap, folderName, fileName, listener).execute();
     }
 
+    public void saveToPicturesFast(final Bitmap bitmap, final String folderName, final String fileName,
+                                   final OnPictureRenderedListener pPictureRenderedListener,
+                                   final OnPictureSavedListener pPictureSavedListener) {
+        new RenderTask(bitmap, folderName, fileName, pPictureRenderedListener, pPictureSavedListener).execute();
+        // new SaveTask(bitmap, folderName, fileName, pPictureSavedListener).execute();
+    }
+
     /**
-     * Runs the given Runnable on the OpenGL thread.
-     *
-     * @param runnable The runnable to be run on the OpenGL thread.
+     Runs the given Runnable on the OpenGL thread.
+
+     @param runnable
+     The runnable to be run on the OpenGL thread.
      */
     void runOnGLThread(Runnable runnable) {
         mRenderer.runOnDrawEnd(runnable);
@@ -388,8 +412,7 @@ public class GPUImage {
         } else if (mCurrentBitmap != null) {
             return mCurrentBitmap.getWidth();
         } else {
-            WindowManager windowManager =
-                    (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
+            WindowManager windowManager = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
             Display display = windowManager.getDefaultDisplay();
             return display.getWidth();
         }
@@ -401,24 +424,123 @@ public class GPUImage {
         } else if (mCurrentBitmap != null) {
             return mCurrentBitmap.getHeight();
         } else {
-            WindowManager windowManager =
-                    (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
+            WindowManager windowManager = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
             Display display = windowManager.getDefaultDisplay();
             return display.getHeight();
         }
     }
 
-    @Deprecated
-    private class SaveTask extends AsyncTask<Void, Void, Void> {
+    /**
+     This AsyncTask will render camera image with effects and execute {@link jp.co.cyberagent.android.gpuimage.GPUImage.WriteToSDTask}
+     to save it to SD. Main purpose is splitting rendering that blocks rendering(especially Camera preview) & saving
+     image to SD that can be executed in background while rendering continues
+     */
+    private class RenderTask
+            extends AsyncTask<Void, Void, Bitmap> {
 
-        private final Bitmap mBitmap;
-        private final String mFolderName;
-        private final String mFileName;
+        private final Bitmap                    mBitmap;
+        private final String                    mFolderName;
+        private final String                    mFileName;
+        private final OnPictureRenderedListener mPictureRenderedListener;
+        private final OnPictureSavedListener    mPictureSavedListener;
+
+        public RenderTask(final Bitmap bitmap, final String folderName, final String fileName,
+                          final OnPictureRenderedListener pPictureRenderedListener,
+                          final OnPictureSavedListener pPictureSavedListener) {
+            mBitmap = bitmap;
+            mFolderName = folderName;
+            mFileName = fileName;
+            mPictureRenderedListener = pPictureRenderedListener;
+            mPictureSavedListener = pPictureSavedListener;
+        }
+
+        @Override
+        protected Bitmap doInBackground(final Void... params) {
+            return getBitmapWithFilterApplied(mBitmap);
+        }
+
+        @Override
+        protected void onPostExecute(final Bitmap result) {
+            if (mPictureRenderedListener != null) {
+                mPictureRenderedListener.onPictureRendered();
+            }
+
+            if (mPictureSavedListener != null) {
+                new WriteToSDTask(mBitmap, mFolderName, mFileName, mPictureSavedListener).execute();
+            }
+            super.onPostExecute(result);
+        }
+
+    }
+
+    /**
+     This AsyncTask will write supplied bitmap to SD
+     */
+    private class WriteToSDTask
+            extends AsyncTask<Void, Void, Void> {
+
+        private final Bitmap                 mBitmap;
+        private final String                 mFolderName;
+        private final String                 mFileName;
+        private final OnPictureSavedListener mPictureSavedListener;
+        private final Handler                mHandler;
+
+        public WriteToSDTask(final Bitmap bitmap, final String folderName, final String fileName,
+                             final OnPictureSavedListener pPictureSavedListener) {
+            mBitmap = bitmap;
+            mFolderName = folderName;
+            mFileName = fileName;
+            mPictureSavedListener = pPictureSavedListener;
+            mHandler = new Handler();
+        }
+
+        @Override
+        protected Void doInBackground(final Void... params) {
+            saveImage(mFolderName, mFileName, mBitmap);
+            return null;
+        }
+
+        private void saveImage(final String folderName, final String fileName, final Bitmap image) {
+            File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+            File file = new File(path, folderName + "/" + fileName);
+            try {
+                file.getParentFile()
+                    .mkdirs();
+                image.compress(CompressFormat.JPEG, 80, new FileOutputStream(file));
+                MediaScannerConnection.scanFile(mContext, new String[]{file.toString()}, null,
+                                                new MediaScannerConnection.OnScanCompletedListener() {
+
+                                                    @Override
+                                                    public void onScanCompleted(final String path, final Uri uri) {
+                                                        if (mPictureSavedListener != null) {
+                                                            mHandler.post(new Runnable() {
+
+                                                                @Override
+                                                                public void run() {
+                                                                    mPictureSavedListener.onPictureSaved(uri);
+                                                                }
+                                                            });
+                                                        }
+                                                    }
+                                                });
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Deprecated
+    private class SaveTask
+            extends AsyncTask<Void, Void, Void> {
+
+        private final Bitmap                 mBitmap;
+        private final String                 mFolderName;
+        private final String                 mFileName;
         private final OnPictureSavedListener mListener;
-        private final Handler mHandler;
+        private final Handler                mHandler;
 
         public SaveTask(final Bitmap bitmap, final String folderName, final String fileName,
-                final OnPictureSavedListener listener) {
+                        final OnPictureSavedListener listener) {
             mBitmap = bitmap;
             mFolderName = folderName;
             mFileName = fileName;
@@ -434,30 +556,28 @@ public class GPUImage {
         }
 
         private void saveImage(final String folderName, final String fileName, final Bitmap image) {
-            File path = Environment
-                    .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+            File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
             File file = new File(path, folderName + "/" + fileName);
             try {
-                file.getParentFile().mkdirs();
+                file.getParentFile()
+                    .mkdirs();
                 image.compress(CompressFormat.JPEG, 80, new FileOutputStream(file));
-                MediaScannerConnection.scanFile(mContext,
-                        new String[] {
-                            file.toString()
-                        }, null,
-                        new MediaScannerConnection.OnScanCompletedListener() {
-                            @Override
-                            public void onScanCompleted(final String path, final Uri uri) {
-                                if (mListener != null) {
-                                    mHandler.post(new Runnable() {
+                MediaScannerConnection.scanFile(mContext, new String[]{file.toString()}, null,
+                                                new MediaScannerConnection.OnScanCompletedListener() {
 
-                                        @Override
-                                        public void run() {
-                                            mListener.onPictureSaved(uri);
-                                        }
-                                    });
-                                }
-                            }
-                        });
+                                                    @Override
+                                                    public void onScanCompleted(final String path, final Uri uri) {
+                                                        if (mListener != null) {
+                                                            mHandler.post(new Runnable() {
+
+                                                                @Override
+                                                                public void run() {
+                                                                    mListener.onPictureSaved(uri);
+                                                                }
+                                                            });
+                                                        }
+                                                    }
+                                                });
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
@@ -465,10 +585,21 @@ public class GPUImage {
     }
 
     public interface OnPictureSavedListener {
+
         void onPictureSaved(Uri uri);
     }
 
-    private class LoadImageUriTask extends LoadImageTask {
+    /**
+     Unlike {@link jp.co.cyberagent.android.gpuimage.GPUImage.OnPictureSavedListener} this is called when picture is
+     rendered and before SD writing process begins
+     */
+    public interface OnPictureRenderedListener {
+
+        void onPictureRendered();
+    }
+
+    private class LoadImageUriTask
+            extends LoadImageTask {
 
         private final Uri mUri;
 
@@ -481,10 +612,13 @@ public class GPUImage {
         protected Bitmap decode(BitmapFactory.Options options) {
             try {
                 InputStream inputStream;
-                if (mUri.getScheme().startsWith("http") || mUri.getScheme().startsWith("https")) {
+                if (mUri.getScheme()
+                        .startsWith("http") || mUri.getScheme()
+                                                   .startsWith("https")) {
                     inputStream = new URL(mUri.toString()).openStream();
                 } else {
-                    inputStream = mContext.getContentResolver().openInputStream(mUri);
+                    inputStream = mContext.getContentResolver()
+                                          .openInputStream(mUri);
                 }
                 return BitmapFactory.decodeStream(inputStream, null, options);
             } catch (Exception e) {
@@ -494,9 +628,11 @@ public class GPUImage {
         }
 
         @Override
-        protected int getImageOrientation() throws IOException {
-            Cursor cursor = mContext.getContentResolver().query(mUri,
-                    new String[] { MediaStore.Images.ImageColumns.ORIENTATION }, null, null, null);
+        protected int getImageOrientation()
+                throws IOException {
+            Cursor cursor = mContext.getContentResolver()
+                                    .query(mUri, new String[]{MediaStore.Images.ImageColumns.ORIENTATION}, null, null,
+                                           null);
 
             if (cursor == null || cursor.getCount() != 1) {
                 return 0;
@@ -509,7 +645,8 @@ public class GPUImage {
         }
     }
 
-    private class LoadImageFileTask extends LoadImageTask {
+    private class LoadImageFileTask
+            extends LoadImageTask {
 
         private final File mImageFile;
 
@@ -524,7 +661,8 @@ public class GPUImage {
         }
 
         @Override
-        protected int getImageOrientation() throws IOException {
+        protected int getImageOrientation()
+                throws IOException {
             ExifInterface exif = new ExifInterface(mImageFile.getAbsolutePath());
             int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 1);
             switch (orientation) {
@@ -542,11 +680,12 @@ public class GPUImage {
         }
     }
 
-    private abstract class LoadImageTask extends AsyncTask<Void, Void, Bitmap> {
+    private abstract class LoadImageTask
+            extends AsyncTask<Void, Void, Bitmap> {
 
         private final GPUImage mGPUImage;
-        private int mOutputWidth;
-        private int mOutputHeight;
+        private       int      mOutputWidth;
+        private       int      mOutputHeight;
 
         @SuppressWarnings("deprecation")
         public LoadImageTask(final GPUImage gpuImage) {
@@ -621,8 +760,8 @@ public class GPUImage {
                 // Crop it
                 int diffWidth = newSize[0] - mOutputWidth;
                 int diffHeight = newSize[1] - mOutputHeight;
-                workBitmap = Bitmap.createBitmap(bitmap, diffWidth / 2, diffHeight / 2,
-                        newSize[0] - diffWidth, newSize[1] - diffHeight);
+                workBitmap = Bitmap.createBitmap(bitmap, diffWidth / 2, diffHeight / 2, newSize[0] - diffWidth,
+                                                 newSize[1] - diffHeight);
                 if (workBitmap != bitmap) {
                     bitmap.recycle();
                     bitmap = workBitmap;
@@ -633,10 +772,8 @@ public class GPUImage {
         }
 
         /**
-         * Retrieve the scaling size for the image dependent on the ScaleType.<br>
-         * <br>
-         * If CROP: sides are same size or bigger than output's sides<br>
-         * Else   : sides are same size or smaller than output's sides
+         Retrieve the scaling size for the image dependent on the ScaleType.<br> <br> If CROP: sides are same size or
+         bigger than output's sides<br> Else   : sides are same size or smaller than output's sides
          */
         private int[] getScaleSize(int width, int height) {
             float newWidth;
@@ -645,8 +782,8 @@ public class GPUImage {
             float withRatio = (float) width / mOutputWidth;
             float heightRatio = (float) height / mOutputHeight;
 
-            boolean adjustWidth = mScaleType == ScaleType.CENTER_CROP
-                    ? withRatio > heightRatio : withRatio < heightRatio;
+            boolean adjustWidth =
+                    mScaleType == ScaleType.CENTER_CROP ? withRatio > heightRatio : withRatio < heightRatio;
 
             if (adjustWidth) {
                 newHeight = mOutputHeight;
@@ -676,8 +813,8 @@ public class GPUImage {
                 if (orientation != 0) {
                     Matrix matrix = new Matrix();
                     matrix.postRotate(orientation);
-                    rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
-                            bitmap.getHeight(), matrix, true);
+                    rotatedBitmap =
+                            Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
                     bitmap.recycle();
                 }
             } catch (IOException e) {
@@ -686,12 +823,17 @@ public class GPUImage {
             return rotatedBitmap;
         }
 
-        protected abstract int getImageOrientation() throws IOException;
+        protected abstract int getImageOrientation()
+                throws IOException;
     }
 
     public interface ResponseListener<T> {
+
         void response(T item);
     }
 
-    public enum ScaleType { CENTER_INSIDE, CENTER_CROP }
+    public enum ScaleType {
+        CENTER_INSIDE,
+        CENTER_CROP
+    }
 }

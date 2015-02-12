@@ -1,0 +1,1 @@
+// This empty file is needed to run ndk-build on Windows

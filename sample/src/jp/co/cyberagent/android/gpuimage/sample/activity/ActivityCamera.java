@@ -49,11 +49,13 @@ import jp.co.cyberagent.android.gpuimage.sample.R;
 import jp.co.cyberagent.android.gpuimage.sample.utils.CameraHelper;
 import jp.co.cyberagent.android.gpuimage.sample.utils.CameraHelper.CameraInfo2;
 
-public class ActivityCamera extends Activity implements OnSeekBarChangeListener, OnClickListener {
+public class ActivityCamera
+        extends Activity
+        implements OnSeekBarChangeListener, OnClickListener {
 
-    private GPUImage mGPUImage;
-    private CameraHelper mCameraHelper;
-    private CameraLoader mCamera;
+    private GPUImage       mGPUImage;
+    private CameraHelper   mCameraHelper;
+    private CameraLoader   mCamera;
     private GPUImageFilter mFilter;
     private FilterAdjuster mFilterAdjuster;
 
@@ -104,8 +106,9 @@ public class ActivityCamera extends Activity implements OnSeekBarChangeListener,
                 break;
 
             case R.id.button_capture:
-                if (mCamera.mCameraInstance.getParameters().getFocusMode().equals(
-                        Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
+                if (mCamera.mCameraInstance.getParameters()
+                                           .getFocusMode()
+                                           .equals(Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
                     takePicture();
                 } else {
                     mCamera.mCameraInstance.autoFocus(new Camera.AutoFocusCallback() {
@@ -134,103 +137,109 @@ public class ActivityCamera extends Activity implements OnSeekBarChangeListener,
         params.setJpegQuality(100);
 
         mCamera.mCameraInstance.setParameters(params);
-//        for (Camera.Size size : params.getSupportedPictureSizes()) {
-//            Log.i("ASDF", "Supported: " + size.width + "x" + size.height);
-//        }
+        //        for (Camera.Size size : params.getSupportedPictureSizes()) {
+        //            Log.i("ASDF", "Supported: " + size.width + "x" + size.height);
+        //        }
 
         final long start = System.currentTimeMillis();
 
-        mCamera.mCameraInstance.takePicture(null, null,
-                new Camera.PictureCallback() {
+        mCamera.mCameraInstance.takePicture(null, null, new Camera.PictureCallback() {
 
-                    @Override
-                    public void onPictureTaken(byte[] data, final Camera camera) {
+            @Override
+            public void onPictureTaken(byte[] data, final Camera camera) {
 
-                        long timeTaken = (System.currentTimeMillis() - start);
-                        Log.i("ASDF", "mCamera.mCameraInstance.takePicture: " + timeTaken + " millis");
+                long timeTaken = (System.currentTimeMillis() - start);
+                Log.i("ASDF", "mCamera.mCameraInstance.takePicture: " + timeTaken +
+                              " millis");
 
-                        final File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
-                        if (pictureFile == null) {
-                            Log.d("ASDF",
-                                    "Error creating media file, check storage permissions");
-                            return;
-                        }
+                final File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
+                if (pictureFile == null) {
+                    Log.d("ASDF", "Error creating media file, check storage permissions");
+                    return;
+                }
 
-                        long timeTakenDiff = (System.currentTimeMillis() - start) - timeTaken;
-                        timeTaken = (System.currentTimeMillis() - start);
-                        Log.i("ASDF", "getOutputMediaFile: " + timeTakenDiff + " millis (" + timeTaken + " millis in total)");
+                long timeTakenDiff = (System.currentTimeMillis() - start) - timeTaken;
+                timeTaken = (System.currentTimeMillis() - start);
+                Log.i("ASDF", "getOutputMediaFile: " + timeTakenDiff + " millis (" +
+                              timeTaken + " millis in total)");
 
-                        try {
-                            FileOutputStream fos = new FileOutputStream(pictureFile);
-                            fos.write(data);
-                            fos.close();
-                        } catch (FileNotFoundException e) {
-                            Log.d("ASDF", "File not found: " + e.getMessage());
-                        } catch (IOException e) {
-                            Log.d("ASDF", "Error accessing file: " + e.getMessage());
-                        }
+                try {
+                    FileOutputStream fos = new FileOutputStream(pictureFile);
+                    fos.write(data);
+                    fos.close();
+                } catch (FileNotFoundException e) {
+                    Log.d("ASDF", "File not found: " + e.getMessage());
+                } catch (IOException e) {
+                    Log.d("ASDF", "Error accessing file: " + e.getMessage());
+                }
 
-                        timeTakenDiff = (System.currentTimeMillis() - start) - timeTaken;
-                        timeTaken = (System.currentTimeMillis() - start);
-                        Log.i("ASDF", "fos.write(data): " + timeTakenDiff + " millis (" + timeTaken + " millis in total)");
+                timeTakenDiff = (System.currentTimeMillis() - start) - timeTaken;
+                timeTaken = (System.currentTimeMillis() - start);
+                Log.i("ASDF", "fos.write(data): " + timeTakenDiff + " millis (" +
+                              timeTaken + " millis in total)");
 
-                        data = null;
-                        Bitmap bitmap = BitmapFactory.decodeFile(pictureFile.getAbsolutePath());
+                data = null;
+                Bitmap bitmap = BitmapFactory.decodeFile(pictureFile.getAbsolutePath());
 
-                        timeTakenDiff = (System.currentTimeMillis() - start) - timeTaken;
-                        timeTaken = (System.currentTimeMillis() - start);
-                        Log.i("ASDF", "BitmapFactory.decodeFile: " + timeTakenDiff + " millis (" + timeTaken + " millis in total)");
+                timeTakenDiff = (System.currentTimeMillis() - start) - timeTaken;
+                timeTaken = (System.currentTimeMillis() - start);
+                Log.i("ASDF", "BitmapFactory.decodeFile: " + timeTakenDiff + " millis (" +
+                              timeTaken + " millis in total)");
 
-                        // Enable if doing byte[] to bitmap directly
-//                        Bitmap bitmap = getBitmapFromBytes(data, 2448, 3264);
-//                        long timeTakenDiff = (System.currentTimeMillis() - start) - timeTaken;
-//                        timeTaken = (System.currentTimeMillis() - start);
-//                        Log.i("ASDF", "getBitmapFromBytes: " + timeTakenDiff + " millis (" + timeTaken + " millis in total)");
+                // Enable if doing byte[] to bitmap directly
+                //                        Bitmap bitmap = getBitmapFromBytes(data, 2448, 3264);
+                //                        long timeTakenDiff = (System.currentTimeMillis() - start) - timeTaken;
+                //                        timeTaken = (System.currentTimeMillis() - start);
+                //                        Log.i("ASDF", "getBitmapFromBytes: " + timeTakenDiff + " millis (" + timeTaken + " millis in total)");
 
-                        // mGPUImage.setImage(bitmap);
-                        final GLSurfaceView view = (GLSurfaceView) findViewById(R.id.surfaceView);
-                        view.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+                // mGPUImage.setImage(bitmap);
+                final GLSurfaceView view = (GLSurfaceView) findViewById(R.id.surfaceView);
+                view.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 
-                        timeTakenDiff = (System.currentTimeMillis() - start) - timeTaken;
-                        timeTaken = (System.currentTimeMillis() - start);
-                        Log.i("ASDF", "setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY): " + timeTakenDiff + " millis (" + timeTaken + " millis in total)");
+                timeTakenDiff = (System.currentTimeMillis() - start) - timeTaken;
+                timeTaken = (System.currentTimeMillis() - start);
+                Log.i("ASDF", "setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY): " +
+                              timeTakenDiff + " millis (" + timeTaken +
+                              " millis in total)");
 
-                        final long timeTakenTemp = timeTaken;
+                final long timeTakenTemp = timeTaken;
 
-                        mGPUImage.saveToPictures(bitmap, "GPUImage",
-                                System.currentTimeMillis() + ".jpg",
-                                new OnPictureSavedListener() {
+                mGPUImage.saveToPicturesFast(bitmap, "GPUImage", System.currentTimeMillis() + ".jpg",
+                                             new GPUImage.OnPictureRenderedListener() {
 
-                                    @Override
-                                    public void onPictureSaved(final Uri
-                                            uri) {
+                                                 @Override
+                                                 public void onPictureRendered() {
+                                                     long timeTakenDiff =
+                                                             (System.currentTimeMillis() - start) - timeTakenTemp;
+                                                     long timeTaken = (System.currentTimeMillis() - start);
+                                                     Log.i("ASDF", "onPictureRendered is called: " + timeTakenDiff +
+                                                                   " millis (" + timeTaken +
+                                                                   " millis in total)");
 
-                                        long timeTakenDiff = (System.currentTimeMillis() - start) - timeTakenTemp;
-                                        long timeTaken = (System.currentTimeMillis() - start);
-                                        Log.i("ASDF", "mGPUImage.saveToPictures: " + timeTakenDiff + " millis (" + timeTaken + " millis in total)");
 
-                                        pictureFile.delete();
-                                        timeTakenDiff = (System.currentTimeMillis() - start) - timeTaken;
-                                        timeTaken = (System.currentTimeMillis() - start);
-                                        Log.i("ASDF", "pictureFile.delete: " + timeTakenDiff + " millis (" + timeTaken + " millis in total)");
+                                                     camera.startPreview();
 
-                                        camera.startPreview();
+                                                     timeTakenDiff = (System.currentTimeMillis() - start) - timeTaken;
+                                                     timeTaken = (System.currentTimeMillis() - start);
+                                                     Log.i("ASDF", "after camera.startPreview(): " + timeTakenDiff +
+                                                                   " millis (" + timeTaken +
+                                                                   " millis in total)");
 
-                                        timeTakenDiff = (System.currentTimeMillis() - start) - timeTaken;
-                                        timeTaken = (System.currentTimeMillis() - start);
-                                        Log.i("ASDF", "camera.startPreview(): " + timeTakenDiff + " millis (" + timeTaken + " millis in total)");
+                                                     view.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
 
-                                        view.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+                                                     Log.i("ASDF", "onPictureRendered done: " + timeTaken + " millis");
+                                                 }
+                                             }, new OnPictureSavedListener() {
 
-                                        timeTakenDiff = (System.currentTimeMillis() - start) - timeTaken;
-                                        timeTaken = (System.currentTimeMillis() - start);
-                                        Log.i("ASDF", "setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY): " + timeTakenDiff + " millis (" + timeTaken + " millis in total)");
-
-                                        Log.i("ASDF", "All done: " + timeTaken + " millis");
-                                    }
-                                });
-                    }
-                });
+                            @Override
+                            public void onPictureSaved(final Uri uri) {
+                                pictureFile.delete();
+                                long timeTaken = (System.currentTimeMillis() - start);
+                                Log.i("ASDF", "All done: " + timeTaken + " millis");
+                            }
+                        });
+            }
+        });
     }
 
     public static Bitmap getBitmapFromBytes(byte[] content, int width, int height) {
@@ -253,8 +262,7 @@ public class ActivityCamera extends Activity implements OnSeekBarChangeListener,
         }
     }
 
-    protected static int calculateInSampleSize(
-            BitmapFactory.Options options, int reqWidth, int reqHeight) {
+    protected static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
         // Raw height and width of image
         final int height = options.outHeight;
         final int width = options.outWidth;
@@ -267,8 +275,7 @@ public class ActivityCamera extends Activity implements OnSeekBarChangeListener,
 
             // Calculate the largest inSampleSize value that is a power of 2 and keeps both
             // height and width larger than the requested height and width.
-            while ((halfHeight / inSampleSize) > reqHeight
-                    && (halfWidth / inSampleSize) > reqWidth) {
+            while ((halfHeight / inSampleSize) > reqHeight && (halfWidth / inSampleSize) > reqWidth) {
                 inSampleSize *= 2;
             }
         }
@@ -283,8 +290,8 @@ public class ActivityCamera extends Activity implements OnSeekBarChangeListener,
         // To be safe, you should check that the SDCard is mounted
         // using Environment.getExternalStorageState() before doing this.
 
-        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), "MyCameraApp");
+        File mediaStorageDir =
+                new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "MyCameraApp");
         // This location works best if you want the created images to be shared
         // between applications and persist after your app has been uninstalled.
 
@@ -301,10 +308,10 @@ public class ActivityCamera extends Activity implements OnSeekBarChangeListener,
         File mediaFile;
         if (type == MEDIA_TYPE_IMAGE) {
             mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                    "IMG_" + timeStamp + ".jpg");
+                                 "IMG_" + timeStamp + ".jpg");
         } else if (type == MEDIA_TYPE_VIDEO) {
             mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                    "VID_" + timeStamp + ".mp4");
+                                 "VID_" + timeStamp + ".mp4");
         } else {
             return null;
         }
@@ -313,8 +320,8 @@ public class ActivityCamera extends Activity implements OnSeekBarChangeListener,
     }
 
     private void switchFilterTo(final GPUImageFilter filter) {
-        if (mFilter == null
-                || (filter != null && !mFilter.getClass().equals(filter.getClass()))) {
+        if (mFilter == null || (filter != null && !mFilter.getClass()
+                                                          .equals(filter.getClass()))) {
             mFilter = filter;
             mGPUImage.setFilter(mFilter);
             mFilterAdjuster = new FilterAdjuster(mFilter);
@@ -322,8 +329,7 @@ public class ActivityCamera extends Activity implements OnSeekBarChangeListener,
     }
 
     @Override
-    public void onProgressChanged(final SeekBar seekBar, final int progress,
-            final boolean fromUser) {
+    public void onProgressChanged(final SeekBar seekBar, final int progress, final boolean fromUser) {
         if (mFilterAdjuster != null) {
             mFilterAdjuster.adjust(progress);
         }
@@ -361,14 +367,13 @@ public class ActivityCamera extends Activity implements OnSeekBarChangeListener,
             Parameters parameters = mCameraInstance.getParameters();
             // TODO adjust by getting supportedPreviewSizes and then choosing
             // the best one for screen size (best fill screen)
-            if (parameters.getSupportedFocusModes().contains(
-                    Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
+            if (parameters.getSupportedFocusModes()
+                          .contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
                 parameters.setFocusMode(Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
             }
             mCameraInstance.setParameters(parameters);
 
-            int orientation = mCameraHelper.getCameraDisplayOrientation(
-                    ActivityCamera.this, mCurrentCameraId);
+            int orientation = mCameraHelper.getCameraDisplayOrientation(ActivityCamera.this, mCurrentCameraId);
             CameraInfo2 cameraInfo = new CameraInfo2();
             mCameraHelper.getCameraInfo(mCurrentCameraId, cameraInfo);
             boolean flipHorizontal = cameraInfo.facing == CameraInfo.CAMERA_FACING_FRONT;
