@@ -9,3 +9,6 @@ target/
 build/
 .gradle/
 local.properties
+
+.floo
+.flooignore

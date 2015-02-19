@@ -15,7 +15,7 @@ android {
             moduleName "gpuimage-library"
             stl "gnustl_shared"
             abiFilters "all"
-            ldLibs "log"
+            ldLibs "GLESv2","log"
         }
     }
 

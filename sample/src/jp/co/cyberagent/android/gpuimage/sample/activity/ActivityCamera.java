@@ -135,14 +135,15 @@ public class ActivityCamera
         // Setting best quality of photo taken by camera(highest resolution & 100% jpeg quality)
         int resolutionMultiplied = 0;
         for (Camera.Size size : params.getSupportedPictureSizes()) {
-            Log.i("ASDF", "Supported: " + size.width + "x" + size.height);
+//            Log.i("ASDF", "Supported: " + size.width + "x" + size.height);
             final int newResMult = size.width * size.height;
             if (newResMult > resolutionMultiplied) {
                 resolutionMultiplied = newResMult;
                 params.setPictureSize(size.width, size.height);
             }
         }
-        params.setJpegQuality(100);
+        Log.i("ASDF", "picture size: " + params.getPictureSize().width + "x" + params.getPictureSize().height);
+        params.setJpegQuality(90);
 
         mCamera.mCameraInstance.setParameters(params);
 

@@ -26,10 +26,6 @@ import android.hardware.Camera.Size;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView.Renderer;
 
-import jp.co.cyberagent.android.gpuimage.util.TextureRotationUtil;
-
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.opengles.GL10;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -38,27 +34,28 @@ import java.nio.IntBuffer;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
+
+import jp.co.cyberagent.android.gpuimage.util.TextureRotationUtil;
+
 import static jp.co.cyberagent.android.gpuimage.util.TextureRotationUtil.TEXTURE_NO_ROTATION;
 
 @TargetApi(11)
 public class GPUImageRenderer implements Renderer, PreviewCallback {
-    public static final int NO_IMAGE = -1;
-    static final float CUBE[] = {
-            -1.0f, -1.0f,
-            1.0f, -1.0f,
-            -1.0f, 1.0f,
-            1.0f, 1.0f,
-    };
+
+    public static final int   NO_IMAGE = -1;
+    static final        float CUBE[]   = {-1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f,};
 
     private GPUImageFilter mFilter;
 
     public final Object mSurfaceChangedWaiter = new Object();
 
-    private int mGLTextureId = NO_IMAGE;
+    private int            mGLTextureId    = NO_IMAGE;
     private SurfaceTexture mSurfaceTexture = null;
     private final FloatBuffer mGLCubeBuffer;
     private final FloatBuffer mGLTextureBuffer;
-    private IntBuffer mGLRgbBuffer;
+    private       IntBuffer   mGLRgbBuffer;
 
     private int mOutputWidth;
     private int mOutputHeight;
@@ -68,9 +65,9 @@ public class GPUImageRenderer implements Renderer, PreviewCallback {
 
     private final Queue<Runnable> mRunOnDraw;
     private final Queue<Runnable> mRunOnDrawEnd;
-    private Rotation mRotation;
-    private boolean mFlipHorizontal;
-    private boolean mFlipVertical;
+    private       Rotation        mRotation;
+    private       boolean         mFlipHorizontal;
+    private       boolean         mFlipVertical;
     private GPUImage.ScaleType mScaleType = GPUImage.ScaleType.CENTER_CROP;
 
     public GPUImageRenderer(final GPUImageFilter filter) {
@@ -79,13 +76,14 @@ public class GPUImageRenderer implements Renderer, PreviewCallback {
         mRunOnDrawEnd = new LinkedList<Runnable>();
 
         mGLCubeBuffer = ByteBuffer.allocateDirect(CUBE.length * 4)
-                .order(ByteOrder.nativeOrder())
-                .asFloatBuffer();
-        mGLCubeBuffer.put(CUBE).position(0);
+                                  .order(ByteOrder.nativeOrder())
+                                  .asFloatBuffer();
+        mGLCubeBuffer.put(CUBE)
+                     .position(0);
 
         mGLTextureBuffer = ByteBuffer.allocateDirect(TEXTURE_NO_ROTATION.length * 4)
-                .order(ByteOrder.nativeOrder())
-                .asFloatBuffer();
+                                     .order(ByteOrder.nativeOrder())
+                                     .asFloatBuffer();
         setRotation(Rotation.NORMAL, false, false);
     }
 
@@ -138,8 +136,7 @@ public class GPUImageRenderer implements Renderer, PreviewCallback {
             runOnDraw(new Runnable() {
                 @Override
                 public void run() {
-                    GPUImageNativeLibrary.YUVtoRBGA(data, previewSize.width, previewSize.height,
-                            mGLRgbBuffer.array());
+                    GPUImageNativeLibrary.YUVtoRBGA(data, previewSize.width, previewSize.height, mGLRgbBuffer.array());
                     mGLTextureId = OpenGlUtils.loadTexture(mGLRgbBuffer, previewSize, mGLTextureId);
                     camera.addCallbackBuffer(data);
 
@@ -160,6 +157,7 @@ public class GPUImageRenderer implements Renderer, PreviewCallback {
                 int[] textures = new int[1];
                 GLES20.glGenTextures(1, textures, 0);
                 mSurfaceTexture = new SurfaceTexture(textures[0]);
+                // FIXME when camera is released shouldn't call setPreviewTexture
                 try {
                     camera.setPreviewTexture(mSurfaceTexture);
                     camera.setPreviewCallback(GPUImageRenderer.this);
@@ -226,8 +224,8 @@ public class GPUImageRenderer implements Renderer, PreviewCallback {
                     mAddedPadding = 0;
                 }
 
-                mGLTextureId = OpenGlUtils.loadTexture(
-                        resizedBitmap != null ? resizedBitmap : bitmap, mGLTextureId, recycle);
+                mGLTextureId = OpenGlUtils.loadTexture(resizedBitmap != null ? resizedBitmap : bitmap, mGLTextureId,
+                                                       recycle);
                 if (resizedBitmap != null) {
                     resizedBitmap.recycle();
                 }

@@ -36,6 +36,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
 
@@ -52,6 +53,10 @@ import java.util.List;
  */
 public class GPUImage {
 
+    private static final String LOG_TAG = GPUImage.class.getSimpleName();
+
+    public static int sGLESVersion;
+
     private final Context          mContext;
     private final GPUImageRenderer mRenderer;
     private       GLSurfaceView    mGlSurfaceView;
@@ -66,9 +71,16 @@ public class GPUImage {
      the context
      */
     public GPUImage(final Context context) {
-        if (!supportsOpenGLES2(context)) {
-            throw new IllegalStateException("OpenGL ES 2.0 is not supported on this phone.");
+
+        //        sGLESVersion = 3;
+        if (supportsOpenGLES3(context)) {
+            sGLESVersion = 3;
+        } else if (supportsOpenGLES2(context)) {
+            sGLESVersion = 2;
+        } else {
+            throw new IllegalStateException("OpenGL ES 2.0 is not supported on this device. Buy newer one \\(^o^)/");
         }
+        Log.d(LOG_TAG, "OpenGL ES version: " + sGLESVersion);
 
         mContext = context;
         mFilter = new GPUImageFilter();
@@ -90,6 +102,20 @@ public class GPUImage {
     }
 
     /**
+     Checks if OpenGL ES 3.0 is supported on the current device.
+
+     @param context
+     the context
+
+     @return true, if successful
+     */
+    private boolean supportsOpenGLES3(final Context context) {
+        final ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        final ConfigurationInfo configurationInfo = activityManager.getDeviceConfigurationInfo();
+        return configurationInfo.reqGlEsVersion >= 0x30000;
+    }
+
+    /**
      Sets the GLSurfaceView which will display the preview.
 
      @param view
@@ -97,7 +123,7 @@ public class GPUImage {
      */
     public void setGLSurfaceView(final GLSurfaceView view) {
         mGlSurfaceView = view;
-        mGlSurfaceView.setEGLContextClientVersion(2);
+        mGlSurfaceView.setEGLContextClientVersion(sGLESVersion);
         mGlSurfaceView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
         mGlSurfaceView.getHolder()
                       .setFormat(PixelFormat.RGBA_8888);
@@ -456,7 +482,9 @@ public class GPUImage {
 
         @Override
         protected Bitmap doInBackground(final Void... params) {
-            return getBitmapWithFilterApplied(mBitmap);
+            final Bitmap result = getBitmapWithFilterApplied(mBitmap);
+            //            mBitmap.recycle();
+            return result;
         }
 
         @Override
@@ -479,12 +507,24 @@ public class GPUImage {
     private class WriteToSDTask
             extends AsyncTask<Void, Void, Void> {
 
+        private static final int SAVE_IMAGE_COMPRESS_QUALITY = 100;
+
         private final Bitmap                 mBitmap;
         private final String                 mFolderName;
         private final String                 mFileName;
         private final OnPictureSavedListener mPictureSavedListener;
         private final Handler                mHandler;
 
+        /**
+         @param bitmap
+         Bitmap that contains image to write to SD
+         @param folderName
+         Folder name inside 'Pictures' to write to
+         @param fileName
+         File name
+         @param pPictureSavedListener
+         Listener triggered when task is completed
+         */
         public WriteToSDTask(final Bitmap bitmap, final String folderName, final String fileName,
                              final OnPictureSavedListener pPictureSavedListener) {
             mBitmap = bitmap;
@@ -506,7 +546,8 @@ public class GPUImage {
             try {
                 file.getParentFile()
                     .mkdirs();
-                image.compress(CompressFormat.JPEG, 100, new FileOutputStream(file));
+                image.compress(CompressFormat.JPEG, SAVE_IMAGE_COMPRESS_QUALITY, new FileOutputStream(file));
+                image.recycle();
                 MediaScannerConnection.scanFile(mContext, new String[]{file.toString()}, null,
                                                 new MediaScannerConnection.OnScanCompletedListener() {
 
